@@ -23,7 +23,7 @@ repository               : "academicpages/academicpages.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile.png"
+  avatar           : "profile.jpg"
   name             : "정종원 교수"
   pronouns         : # example: "she/her"  
   bio              : "敎學相長 — AI와 교육의 체제적 미래 전환, 교육분야 국제교류협력 연구"
