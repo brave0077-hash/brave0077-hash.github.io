@@ -1,6 +1,6 @@
 ---
 permalink: /
-title: "wjdwhddnjs rytns"
+title: "정종원 교수(Prof. Jung, Jong Won / a.k.a. Prof. JJ)"
 author_profile: true
 redirect_from: 
   - /about/
