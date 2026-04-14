@@ -10,7 +10,6 @@ redirect\_from:
 
 \---
 
-{% include base\_path %}
 
 <a href="/files/CV\\\_Jung\\\_JongWon.pdf" class="btn btn--primary" style="margin-bottom:20px;">📄 CV 다운로드 (PDF)</a>
 
