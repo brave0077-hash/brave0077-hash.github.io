@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>에듀테크 특징 매칭 게임</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f3;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e5e5e0;
+      padding: 2rem;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: .3rem;
+      color: #1a1a1a;
+    }
+    .page-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #e5e5e0;
+      border-radius: 2px;
+      margin-bottom: 1.25rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #1D9E75;
+      border-radius: 2px;
+      transition: width .4s;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .score-area { display: flex; gap: 10px; }
+    .score-pill {
+      background: #f5f5f3;
+      border: 1px solid #e5e5e0;
+      border-radius: 8px;
+      padding: 5px 14px;
+      font-size: 13px;
+      color: #666;
+    }
+    .score-pill span { font-weight: 500; color: #1a1a1a; margin-left: 4px; }
+
+    button {
+      background: #fff;
+      border: 1px solid #d0d0cc;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #444;
+      font-family: inherit;
+    }
+    button:hover { background: #f5f5f3; }
+    button:active { transform: scale(0.98); }
+
+    .board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .col-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      letter-spacing: .04em;
+      margin-bottom: .5rem;
+      padding-left: 2px;
+    }
+
+    .cards-col { display: flex; flex-direction: column; gap: 8px; }
+
+    .card {
+      border-radius: 10px;
+      border: 1px solid #e5e5e0;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      background: #ffffff;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      user-select: none;
+      position: relative;
+    }
+    .card:hover { border-color: #bbb; background: #fafaf8; }
+    .card.selected { border-color: #378ADD; background: #E6F1FB; color: #0C447C; }
+    .card.matched {
+      border-color: #1D9E75;
+      background: #E1F5EE;
+      color: #085041;
+      cursor: default;
+    }
+    .card.matched:hover { border-color: #1D9E75; background: #E1F5EE; }
+    .card.wrong { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
+    .card.feature-card {
+      font-weight: 500;
+      font-size: 15px;
+      text-align: center;
+      padding: 16px 12px;
+    }
+    .match-badge {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #1D9E75;
+    }
+
+    .hint-area {
+      margin-top: 1rem;
+      min-height: 40px;
+      background: #f5f5f3;
+      border-radius: 8px;
+      border: 1px solid #e5e5e0;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.55;
+    }
+
+    .celebrate {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      background: #f5f5f3;
+      border-radius: 12px;
+      border: 1px solid #e5e5e0;
+    }
+    .celebrate h3 { font-size: 20px; font-weight: 500; margin-bottom: .5rem; }
+    .celebrate p { font-size: 14px; color: #666; margin-bottom: 1.25rem; }
+    .celebrate .big-score {
+      font-size: 36px;
+      font-weight: 500;
+      color: #1D9E75;
+      margin-bottom: .25rem;
+    }
+    .celebrate .score-label { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+
+    @media (max-width: 540px) {
+      .board { grid-template-columns: 1fr; }
+      .container { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <p class="page-title">에듀테크 특징 매칭 게임</p>
+  <p class="page-sub">상황 카드를 선택한 뒤, 알맞은 에듀테크 특징을 연결하세요.</p>
+
+  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+  <div class="header">
+    <div class="score-area">
+      <div class="score-pill">맞춤 <span id="correct-count">0</span>/6</div>
+      <div class="score-pill">시도 <span id="try-count">0</span></div>
+    </div>
+    <button onclick="resetGame()">다시하기</button>
+  </div>
+
+  <div id="main-board">
+    <div class="board">
+      <div>
+        <div class="col-label">상황 카드</div>
+        <div class="cards-col" id="situation-col"></div>
+      </div>
+      <div>
+        <div class="col-label">에듀테크 특징</div>
+        <div class="cards-col" id="feature-col"></div>
+      </div>
+    </div>
+    <div class="hint-area" id="hint-text">상황 카드 하나를 선택한 뒤, 해당하는 특징을 선택하세요.</div>
+  </div>
+
+  <div id="celebrate-box" style="display:none">
+    <div class="celebrate">
+      <div class="big-score">🎉</div>
+      <h3>모두 맞췄어요!</h3>
+      <p class="score-label">시도 횟수: <strong id="final-tries">0</strong>번</p>
+      <p>6가지 에듀테크 특징을 모두 정확히 연결했습니다.</p>
+      <br>
+      <button onclick="resetGame()">다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: 'hyper',
+    situation: '넷플릭스처럼 내가 어제 본 강의를 분석해서 오늘 볼 강의를 자동 추천해준다',
+    feature: '초개인화',
+    tip: '정답! 초개인화 — 학습자의 생활 패턴·취향 데이터를 기반으로 상황과 시기에 맞는 콘텐츠를 제공합니다.'
+  },
+  {
+    id: 'connect',
+    situation: '집에서 스마트워치로 학습하다가 도서관에 도착하면 자동으로 이어서 학습이 시작된다',
+    feature: '초연결화',
+    tip: '정답! 초연결화 — 사람·사물·공간이 끊김 없이 연결되어 어디서나 학습이 이어집니다.'
+  },
+  {
+    id: 'auto',
+    situation: 'AI가 내 오답 패턴을 분석해서 다음 문제를 자동으로 바꿔준다',
+    feature: '초자동화',
+    tip: '정답! 초자동화 — AI·빅데이터로 학습자의 강약점을 분석해 자동으로 최적 교육을 제공합니다.'
+  },
+  {
+    id: 'data',
+    situation: '학생이 어떤 단어에서 멈칫했는지까지 기록되어 교사 대시보드에 표시된다',
+    feature: '데이터화',
+    tip: '정답! 데이터화 — 학습 데이터를 수집·분석해 강점·약점을 조기 발견하고 맞춤 처방합니다.'
+  },
+  {
+    id: 'fusion',
+    situation: '영어 말하기 연습과 발음 교정 AI, 문법 설명 동영상이 하나의 앱에서 연결된다',
+    feature: '융합화',
+    tip: '정답! 융합화 — 콘텐츠와 플랫폼이 통합되어 분야 경계 없이 새로운 교육 가치를 만듭니다.'
+  },
+  {
+    id: 'game',
+    situation: '수학 시간에 포인트를 쌓으면 캐릭터가 성장하고 레벨이 올라간다',
+    feature: '게임화',
+    tip: '정답! 게임화 — 게임 요소(보상·레벨·경쟁)를 활용해 학습 몰입과 내재적 동기를 높입니다.'
+  }
+];
+
+let selectedSit = null;
+let matched = new Set();
+let tries = 0;
+let wrongTimer = null;
+
+function shuffle(arr) {
+  return arr.slice().sort(() => Math.random() - 0.5);
+}
+
+function renderGame() {
+  const sitCol = document.getElementById('situation-col');
+  const featCol = document.getElementById('feature-col');
+  sitCol.innerHTML = '';
+  featCol.innerHTML = '';
+
+  shuffle(DATA).forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'card' + (matched.has(d.id) ? ' matched' : '');
+    el.id = 'sit-' + d.id;
+    el.innerHTML = d.situation + (matched.has(d.id) ? '<span class="match-badge">✓</span>' : '');
+    if (!matched.has(d.id)) el.onclick = () => selectSituation(d.id);
+    sitCol.appendChild(el);
+  });
+
+  shuffle(DATA).forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'card feature-card' + (matched.has(d.id) ? ' matched' : '');
+    el.id = 'feat-' + d.id;
+    el.innerHTML = d.feature + (matched.has(d.id) ? '<span class="match-badge">✓</span>' : '');
+    if (!matched.has(d.id)) el.onclick = () => selectFeature(d.id);
+    featCol.appendChild(el);
+  });
+
+  document.getElementById('correct-count').textContent = matched.size;
+  document.getElementById('try-count').textContent = tries;
+  document.getElementById('prog').style.width = (matched.size / 6 * 100) + '%';
+}
+
+function selectSituation(id) {
+  if (matched.has(id) || wrongTimer) return;
+  document.querySelectorAll('.card:not(.matched):not(.wrong)').forEach(c => c.classList.remove('selected'));
+  selectedSit = id;
+  document.getElementById('sit-' + id).classList.add('selected');
+  document.getElementById('hint-text').textContent = '이제 오른쪽에서 알맞은 에듀테크 특징을 선택하세요.';
+}
+
+function selectFeature(id) {
+  if (matched.has(id) || wrongTimer) return;
+  if (!selectedSit) {
+    document.getElementById('hint-text').textContent = '먼저 왼쪽의 상황 카드를 선택해주세요.';
+    return;
+  }
+
+  tries++;
+  document.getElementById('try-count').textContent = tries;
+
+  if (selectedSit === id) {
+    matched.add(id);
+    const d = DATA.find(x => x.id === id);
+    document.getElementById('hint-text').textContent = d.tip;
+    selectedSit = null;
+    renderGame();
+
+    if (matched.size === 6) {
+      document.getElementById('final-tries').textContent = tries;
+      setTimeout(() => {
+        document.getElementById('main-board').style.display = 'none';
+        document.getElementById('celebrate-box').style.display = 'block';
+      }, 700);
+    }
+  } else {
+    const sitEl = document.getElementById('sit-' + selectedSit);
+    const featEl = document.getElementById('feat-' + id);
+    const correctFeat = DATA.find(x => x.id === selectedSit).feature;
+    sitEl.classList.remove('selected');
+    sitEl.classList.add('wrong');
+    featEl.classList.add('wrong');
+    document.getElementById('hint-text').textContent =
+      `틀렸어요. 다시 생각해보세요. (힌트: "${correctFeat}"는 어떤 의미일까요?)`;
+
+    wrongTimer = setTimeout(() => {
+      sitEl.classList.remove('wrong');
+      featEl.classList.remove('wrong');
+      wrongTimer = null;
+      selectedSit = null;
+      document.getElementById('hint-text').textContent = '상황 카드 하나를 선택한 뒤, 해당하는 특징을 선택하세요.';
+    }, 1400);
+  }
+}
+
+function resetGame() {
+  matched.clear();
+  tries = 0;
+  selectedSit = null;
+  if (wrongTimer) { clearTimeout(wrongTimer); wrongTimer = null; }
+  document.getElementById('main-board').style.display = '';
+  document.getElementById('celebrate-box').style.display = 'none';
+  document.getElementById('hint-text').textContent = '상황 카드 하나를 선택한 뒤, 해당하는 특징을 선택하세요.';
+  renderGame();
+}
+
+renderGame();
+</script>
+</body>
+</html>
